@@ -49,9 +49,9 @@ def launch_tool(name: str) -> str:
     response,status=desktop.launch_app(name)
     return response
     
-@mcp.tool(name='Powershell-Tool', description='Execute PowerShell commands and return the output with status code')
-def powershell_tool(command: str) -> str:
-    response,status=desktop.execute_command(command)
+@mcp.tool(name='Powershell-Tool', description='Execute PowerShell commands and return the output with status code. Set load_profile=True (default) to load user profile for environment variables and custom modules, or False for faster execution without profile.')
+def powershell_tool(command: str, load_profile: bool = True) -> str:
+    response,status=desktop.execute_command(command, load_profile=load_profile)
     return f'Status Code: {status}\nResponse: {response}'
 
 @mcp.tool(name='State-Tool',description='Capture comprehensive desktop state including default language used by user interface, focused/opened applications, interactive UI elements (buttons, text fields, menus), informative content (text, labels, status), and scrollable areas. Optionally includes visual screenshot when use_vision=True. Essential for understanding current desktop context and available UI interactions.')
