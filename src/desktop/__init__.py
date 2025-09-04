@@ -77,12 +77,20 @@ class Desktop:
         reader=csv.DictReader(io.StringIO(apps_info))
         return {row.get('Name').lower():row.get('AppID') for row in reader}
     
-    def execute_command(self,command:str)->tuple[str,int]:
+    def execute_command(self,command:str,load_profile:bool=True)->tuple[str,int]:
         try:
+            # Build PowerShell command arguments
+            ps_args = ['powershell']
+            
+            # Add profile loading option - load profile by default for better environment support
+            if not load_profile:
+                ps_args.append('-NoProfile')
+            
+            ps_args.extend(['-Command', '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; ' + command])
+            
             # Use UTF-8 encoding for better Chinese character support
             result = subprocess.run(
-                ['powershell', '-NoProfile', '-Command', 
-                 '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; ' + command], 
+                ps_args, 
                 capture_output=True, check=True, text=True, encoding='utf-8'
             )
             return (result.stdout, result.returncode)
@@ -94,8 +102,13 @@ class Desktop:
             except Exception:
                 # Fallback to GBK for Chinese Windows systems
                 try:
+                    ps_args = ['powershell']
+                    if not load_profile:
+                        ps_args.append('-NoProfile')
+                    ps_args.extend(['-Command', command])
+                    
                     result = subprocess.run(
-                        ['powershell', '-NoProfile', '-Command', command], 
+                        ps_args, 
                         capture_output=True, check=False
                     )
                     return (result.stdout.decode('gbk', errors='ignore'), result.returncode)
